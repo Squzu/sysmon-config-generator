@@ -83,7 +83,7 @@ No installation required.
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/sysmon-config-generator.git
+git clone https://github.com/squzu/sysmon-config-generator.git
 ```
 
 Open:
