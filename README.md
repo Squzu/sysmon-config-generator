@@ -106,7 +106,7 @@ sysmon-config-generator/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-└── examples/
+└── Examples/
 ```
 
 ---
