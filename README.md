@@ -102,7 +102,7 @@ That's it.
 
 ```text
 sysmon-config-generator/
-├── index.html
+├── Index.html
 ├── README.md
 ├── LICENSE
 ├── .gitignore
