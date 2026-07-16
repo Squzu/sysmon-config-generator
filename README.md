@@ -25,20 +25,6 @@ Built for SOC Analysts, Detection Engineers, Threat Hunters, DFIR professionals,
 
 ---
 
-## Screenshots
-
-> Add screenshots after uploading the project.
-
-```
-screenshots/
-├── dashboard.png
-├── builder.png
-├── xml-preview.png
-└── deployment-helper.png
-```
-
----
-
 ## Why This Project?
 
 Creating Sysmon configurations manually is tedious and error-prone.
@@ -120,7 +106,6 @@ sysmon-config-generator/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-├── screenshots/
 └── examples/
 ```
 
