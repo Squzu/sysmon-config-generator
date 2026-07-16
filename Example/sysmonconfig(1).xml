@@ -1,0 +1,82 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256</HashAlgorithms>
+  <EventFiltering>
+
+    <!-- EVENT ID 1 : PROCESS CREATE [ProcessCreate] -->
+    <!-- Logs every new process that starts — command line, parent process, and user. The single most useful event for catching malicious execution. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessCreate onmatch="exclude">
+        <Image condition="end with">\\MsMpEng.exe</Image> <!--Windows Defender-->
+        <ParentImage condition="end with">\\svchost.exe</ParentImage> <!--Windows service host noise-->
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- EVENT ID 3 : NETWORK CONNECTION [NetworkConnect] -->
+    <!-- Logs outbound TCP connections a process makes — source/destination IP, port, and which process made the call. -->
+    <RuleGroup name="" groupRelation="or">
+      <NetworkConnect onmatch="exclude">
+        <Image condition="end with">\\chrome.exe</Image> <!--Browser noise-->
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- EVENT ID 5 : PROCESS TERMINATE [ProcessTerminate] -->
+    <!-- Logs when a process ends. Useful for building a timeline of what ran and for how long. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessTerminate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 6 : DRIVER LOADED [DriverLoad] -->
+    <!-- Logs kernel drivers as they load, including whether they're signed — important because malicious drivers run with kernel privileges. -->
+    <RuleGroup name="" groupRelation="or">
+      <DriverLoad onmatch="exclude">
+        <Signed condition="is">true</Signed> <!--Trust signed drivers-->
+      </DriverLoad>
+    </RuleGroup>
+
+    <!-- EVENT ID 8 : CREATE REMOTE THREAD [CreateRemoteThread] -->
+    <!-- Logs one process injecting a thread into another — a common code-injection technique. -->
+    <RuleGroup name="" groupRelation="or">
+      <CreateRemoteThread onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 11 : FILE CREATE [FileCreate] -->
+    <!-- Logs new files being written to disk, with the full path — good for catching dropped malware or staged data. -->
+    <RuleGroup name="" groupRelation="or">
+      <FileCreate onmatch="exclude">
+        <TargetFilename condition="contains">\\AppData\\Local\\Temp\\</TargetFilename> <!--Ignore temp scratch files-->
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- EVENT ID 12/13/14 : REGISTRY EVENT [RegistryEvent] -->
+    <!-- Logs registry keys/values being created, changed, deleted, or renamed — where most persistence mechanisms live. -->
+    <RuleGroup name="" groupRelation="or">
+      <RegistryEvent onmatch="exclude">
+        <TargetObject condition="begin with">HKLM\\SOFTWARE\\Microsoft\\Windows Defender</TargetObject> <!--Defender internal churn-->
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- EVENT ID 17/18 : NAMED PIPE CREATED / CONNECTED [PipeEvent] -->
+    <!-- Logs named pipes being created or connected to — often used by attack frameworks like Cobalt Strike for inter-process communication. -->
+    <RuleGroup name="" groupRelation="or">
+      <PipeEvent onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 19/20/21 : WMI FILTER / CONSUMER / BINDING [WmiEvent] -->
+    <!-- Logs WMI event filters, consumers, and bindings — a stealthy persistence mechanism that survives reboots. -->
+    <RuleGroup name="" groupRelation="or">
+      <WmiEvent onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 22 : DNS QUERY [DnsQuery] -->
+    <!-- Logs every DNS lookup a process makes. Extremely high volume — strongly recommend filtering before enabling broadly. -->
+    <RuleGroup name="" groupRelation="or">
+      <DnsQuery onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 25 : PROCESS TAMPERING [ProcessTampering] -->
+    <!-- Logs process hollowing / image tampering — when a process's memory image is swapped out from under it. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessTampering onmatch="exclude"/>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

@@ -1,0 +1,41 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256</HashAlgorithms>
+  <EventFiltering>
+
+    <!-- EVENT ID 1 : PROCESS CREATE [ProcessCreate] -->
+    <!-- Logs every new process that starts — command line, parent process, and user. The single most useful event for catching malicious execution. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessCreate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 3 : NETWORK CONNECTION [NetworkConnect] -->
+    <!-- Logs outbound TCP connections a process makes — source/destination IP, port, and which process made the call. -->
+    <RuleGroup name="" groupRelation="or">
+      <NetworkConnect onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 5 : PROCESS TERMINATE [ProcessTerminate] -->
+    <!-- Logs when a process ends. Useful for building a timeline of what ran and for how long. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessTerminate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 6 : DRIVER LOADED [DriverLoad] -->
+    <!-- Logs kernel drivers as they load, including whether they're signed — important because malicious drivers run with kernel privileges. -->
+    <RuleGroup name="" groupRelation="or">
+      <DriverLoad onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 11 : FILE CREATE [FileCreate] -->
+    <!-- Logs new files being written to disk, with the full path — good for catching dropped malware or staged data. -->
+    <RuleGroup name="" groupRelation="or">
+      <FileCreate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 12/13/14 : REGISTRY EVENT [RegistryEvent] -->
+    <!-- Logs registry keys/values being created, changed, deleted, or renamed — where most persistence mechanisms live. -->
+    <RuleGroup name="" groupRelation="or">
+      <RegistryEvent onmatch="exclude"/>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

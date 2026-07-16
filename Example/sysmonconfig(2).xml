@@ -1,0 +1,74 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256</HashAlgorithms>
+  <EventFiltering>
+
+    <!-- EVENT ID 1 : PROCESS CREATE [ProcessCreate] -->
+    <!-- Logs every new process that starts — command line, parent process, and user. The single most useful event for catching malicious execution. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <CommandLine name="T1059" condition="contains">powershell</CommandLine> <!--PowerShell on an engineering workstation-->
+        <CommandLine name="T1027" condition="contains">-enc</CommandLine> <!--Encoded PowerShell payload-->
+        <Image name="T1570" condition="contains">psexec</Image> <!--Lateral movement tooling-->
+        <Image condition="contains">plcedit</Image> <!--PLC programming tool launched-->
+        <Image condition="contains">step7</Image> <!--Siemens engineering software launched-->
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- EVENT ID 3 : NETWORK CONNECTION [NetworkConnect] -->
+    <!-- Logs outbound TCP connections a process makes — source/destination IP, port, and which process made the call. -->
+    <RuleGroup name="" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <DestinationPort condition="is">502</DestinationPort> <!--Modbus/TCP-->
+        <DestinationPort condition="is">102</DestinationPort> <!--S7comm-->
+        <DestinationPort condition="is">44818</DestinationPort> <!--EtherNet/IP-->
+        <DestinationPort condition="is">20000</DestinationPort> <!--DNP3-->
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- EVENT ID 6 : DRIVER LOADED [DriverLoad] -->
+    <!-- Logs kernel drivers as they load, including whether they're signed — important because malicious drivers run with kernel privileges. -->
+    <RuleGroup name="" groupRelation="or">
+      <DriverLoad onmatch="exclude">
+        <Signed condition="is">true</Signed> <!--Trust signed drivers-->
+      </DriverLoad>
+    </RuleGroup>
+
+    <!-- EVENT ID 8 : CREATE REMOTE THREAD [CreateRemoteThread] -->
+    <!-- Logs one process injecting a thread into another — a common code-injection technique. -->
+    <RuleGroup name="" groupRelation="or">
+      <CreateRemoteThread onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- EVENT ID 10 : PROCESS ACCESSED [ProcessAccess] -->
+    <!-- Logs one process opening a handle to another (e.g. reading lsass.exe memory) — a strong credential-theft indicator. -->
+    <RuleGroup name="" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <TargetImage name="T1003" condition="end with">\\lsass.exe</TargetImage> <!--Credential-access indicator-->
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- EVENT ID 11 : FILE CREATE [FileCreate] -->
+    <!-- Logs new files being written to disk, with the full path — good for catching dropped malware or staged data. -->
+    <RuleGroup name="" groupRelation="or">
+      <FileCreate onmatch="include">
+        <TargetFilename condition="end with">.exe</TargetFilename> <!--New executable dropped-->
+        <TargetFilename name="T1091" condition="contains">\\Removable</TargetFilename> <!--Removable media write-->
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- EVENT ID 12/13/14 : REGISTRY EVENT [RegistryEvent] -->
+    <!-- Logs registry keys/values being created, changed, deleted, or renamed — where most persistence mechanisms live. -->
+    <RuleGroup name="" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject name="T1547" condition="contains">\\Run\\</TargetObject> <!--Run-key persistence-->
+        <TargetObject name="T1543" condition="contains">\\Services\\</TargetObject> <!--Service persistence-->
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- EVENT ID 22 : DNS QUERY [DnsQuery] -->
+    <!-- Logs every DNS lookup a process makes. Extremely high volume — strongly recommend filtering before enabling broadly. -->
+    <RuleGroup name="" groupRelation="or">
+      <DnsQuery onmatch="exclude"/>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>
